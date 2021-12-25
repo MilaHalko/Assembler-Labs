@@ -1,9 +1,9 @@
 
  Start  Stop   Length Name               Class
 
- 00000H 0013FH 00140H STSEG              STACK
- 00140H 00147H 00008H DSEG               DATA
- 00150H 00186H 00037H CSEG               CODE
+ 00000H 0003FH 00040H SSG                STACK
+ 00040H 0009CH 0005DH DSG                DATA
+ 000A0H 00162H 000C3H CSG                CODE
 
   Address         Publics by Name
 
@@ -11,5 +11,5 @@
   Address         Publics by Value
 
 
-Program entry point at 0015:0000
+Program entry point at 000A:0000
 
