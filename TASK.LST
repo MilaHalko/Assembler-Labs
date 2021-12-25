@@ -1,0 +1,69 @@
+Turbo Assembler	 Version 4.0	    07/11/21 14:42:25	    Page 1
+task.ASM
+
+
+
+      1	0000			     STSEG SEGMENT PARA	STACK "STACK"
+      2	0000  40*(53 54	41 43 4B)    DB	64 DUP ("STACK")
+      3	0140			     STSEG ENDS
+      4
+      5	0000			     DSEG SEGMENT PARA PUBLIC "DATA"
+      6	0000  0A 14 1E 28	     SOURCE DB 10, 20, 30, 40
+      7	0004  04*(3F)		     DEST DB 4 DUP ("?")
+      8	0008			     DSEG ENDS
+      9
+     10	0000			     CSEG SEGMENT PARA PUBLIC "CODE"
+     11	0000			     MAIN PROC FAR
+     12				     ASSUME CS:	CSEG,DS:DSEG,SS:STSEG
+     13
+     14	0000  1E		     PUSH DS
+     15	0001  B8 0000		     MOV AX,0
+     16	0004  50		     PUSH AX
+     17
+     18	0005  B8 0000s		     MOV AX,DSEG
+     19	0008  8E D8		     MOV DS,AX
+     20
+     21	000A  C6 06 0004r 00	     MOV DEST,0
+     22	000F  C6 06 0005r 00	     MOV DEST+1,0
+     23	0014  C6 06 0006r 00	     MOV DEST+2,0
+     24	0019  C6 06 0007r 00	     MOV DEST+3,0
+     25
+     26	001E  A0 0000r		     MOV AL,SOURCE
+     27	0021  A2 0007r		     MOV DEST+3,AL
+     28	0024  A0 0001r		     MOV AL,SOURCE+1
+     29	0027  A2 0006r		     MOV DEST+2,AL
+     30	002A  A0 0002r		     MOV AL,SOURCE+2
+     31	002D  A2 0005r		     MOV DEST+1,AL
+     32	0030  A0 0003r		     MOV AL,SOURCE+3
+     33	0033  A2 0004r		     MOV DEST,AL
+     34
+     35	0036  CB		     RET
+     36	0037			     MAIN ENDP
+     37	0037			     CSEG ENDS
+     38				     END MAIN
+Turbo Assembler	 Version 4.0	    07/11/21 14:42:25	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/11/21"
+??FILENAME			  Text	 "task	  "
+??TIME				  Text	 "14:42:25"
+??VERSION			  Number 0400
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CSEG
+@FILENAME			  Text	 TASK
+@WORDSIZE			  Text	 2
+DEST				  Byte	 DSEG:0004
+MAIN				  Far	 CSEG:0000
+SOURCE				  Byte	 DSEG:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CSEG				  16  0037 Para	  Public  CODE
+DSEG				  16  0008 Para	  Public  DATA
+STSEG				  16  0140 Para	  Stack	  STACK
+
