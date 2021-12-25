@@ -1,47 +1,278 @@
-Turbo Assembler	 Version 4.0	    07/11/21 14:42:25	    Page 1
+Turbo Assembler	 Version 4.0	    19/12/21 19:48:33	    Page 1
 task.ASM
 
 
 
-      1	0000			     STSEG SEGMENT PARA	STACK "STACK"
-      2	0000  40*(53 54	41 43 4B)    DB	64 DUP ("STACK")
-      3	0140			     STSEG ENDS
+      1	0000			     SSG SEGMENT PARA STACK 'STACK'
+      2	0000  40*(??)			 DB 64 DUP (?)
+      3	0040			     SSG ENDS
       4
-      5	0000			     DSEG SEGMENT PARA PUBLIC "DATA"
-      6	0000  0A 14 1E 28	     SOURCE DB 10, 20, 30, 40
-      7	0004  04*(3F)		     DEST DB 4 DUP ("?")
-      8	0008			     DSEG ENDS
-      9
-     10	0000			     CSEG SEGMENT PARA PUBLIC "CODE"
-     11	0000			     MAIN PROC FAR
-     12				     ASSUME CS:	CSEG,DS:DSEG,SS:STSEG
-     13
-     14	0000  1E		     PUSH DS
-     15	0001  B8 0000		     MOV AX,0
-     16	0004  50		     PUSH AX
-     17
-     18	0005  B8 0000s		     MOV AX,DSEG
-     19	0008  8E D8		     MOV DS,AX
-     20
-     21	000A  C6 06 0004r 00	     MOV DEST,0
-     22	000F  C6 06 0005r 00	     MOV DEST+1,0
-     23	0014  C6 06 0006r 00	     MOV DEST+2,0
-     24	0019  C6 06 0007r 00	     MOV DEST+3,0
-     25
-     26	001E  A0 0000r		     MOV AL,SOURCE
-     27	0021  A2 0007r		     MOV DEST+3,AL
-     28	0024  A0 0001r		     MOV AL,SOURCE+1
-     29	0027  A2 0006r		     MOV DEST+2,AL
-     30	002A  A0 0002r		     MOV AL,SOURCE+2
-     31	002D  A2 0005r		     MOV DEST+1,AL
-     32	0030  A0 0003r		     MOV AL,SOURCE+3
-     33	0033  A2 0004r		     MOV DEST,AL
-     34
-     35	0036  CB		     RET
-     36	0037			     MAIN ENDP
-     37	0037			     CSEG ENDS
-     38				     END MAIN
-Turbo Assembler	 Version 4.0	    07/11/21 14:42:25	    Page 2
+      5	0000			     DSG SEGMENT PARA PUBLIC 'DATA'
+      6	0000  58 20 3D 20 24		 MSG_GET_X DB 'X = $'
+      7	0005  59 20 3D 20 24		 MSG_GET_Y DB 'Y = $'
+      8	000A  4F 56 45 52 46 4C	4F+	 MSG_OVERFLOW DB 'OVERFLOW!$'
+      9	      57 21 24
+     10	0014  57 52 4F 4E 47 20	44+	 MSG_WRONG_DATA	DB 'WRONG DATA!$'
+     11	      41 54 41 21 24
+     12	0020  5A 45 52 4F 20 44	45+	 MSG_DIV_ZERO DB 'ZERO DEVIDE!$'
+     13	      56 49 44 45 21 24
+     14
+     15	002D  ????			 X DW ?
+     16	002F  ????			 Y DW ?
+     17	0031  ????			 Z DW ?
+     18	0033  ????			 Z_SUB DW ?
+     19	0035  00			 ISNEG DB 0
+     20	0036  07 ?? 07*(??)		 BUFFER_X DB 7,	?, 7 DUP(?)
+     21	003F  07 ?? 07*(??)		 BUFFER_Y DB 7,	?, 7 DUP(?)
+     22	0048  000A			 TEN DW	10
+     23	004A			     DSG ENDS
+     24
+     25	0000			     CSG SEGMENT PARA PUBLIC "CODE"
+     26	0000				 MAIN PROC FAR
+     27					     ASSUME CS:CSG, DS:DSG, SS:SSG
+     28	0000  1E			     PUSH DS
+     29	0001  33 C0			     XOR AX, AX
+     30	0003  50			     PUSH AX
+     31	0004  B8 0000s			     MOV AX, DSG
+     32	0007  8E D8			     MOV DS, AX
+     33
+     34	0009  E8 011A			     CALL INPUT
+     35	000C  E8 0099			     CALL CHECKNUMS
+     36
+     37	000F  83 3E 002Dr 00		     CMP X, 0
+     38	0014  7C 45			     JL	FUNC2		 ;35X^2	+ 8X		 x < 0
+     39	0016  83 3E 002Dr 0A		     CMP X, 10
+     40	001B  7F 62			     JG	FUNC3		 ;(10-X)^2		 x > 10
+     41	001D  A1 002Dr			     MOV AX, X
+     42	0020  3B 06 002Fr		     CMP AX, Y
+     43	0024  75 03			     JNE FUNC1		 ;(15X-1)/(Y(X-Y))	 0 <= x	<= 10  y!=x
+     44	0026  EB 6A 90			     JMP WRONG_DATA
+     45
+     46	0029				     FUNC1:		 ;(15X-1)/(Y(X-Y))
+     47	0029  8B 1E 002Fr			 MOV BX, Y
+     48	002D  2B C3				 SUB AX, BX
+     49	002F  70 67				 JO OVERFLOW
+     50	0031  F7 EB				 IMUL BX	 ;Y(X-Y)
+     51	0033  70 63				 JO OVERFLOW
+     52	0035  85 C0				 TEST AX, AX
+     53	0037  74 65				 JZ DIV_ZERO
+     54	0039  A3 0031r				 MOV Z,	AX
+     55
+     56	003C  A1 002Dr				 MOV AX, X
+     57	003F  BB 000F				 MOV BX, 15
+Turbo Assembler	 Version 4.0	    19/12/21 19:48:33	    Page 2
+task.ASM
+
+
+
+     58	0042  F7 EB				 IMUL BX
+     59	0044  70 52				 JO OVERFLOW
+     60	0046  2D 0001				 SUB AX, 1	 ;15X-1
+     61	0049  70 4D				 JO OVERFLOW
+     62
+     63	004B  33 D2				 XOR DX, DX
+     64	004D  F7 3E 0031r			 IDIV Z		 ;(15X-1)/(Y(X-Y))
+     65	0051  A3 0031r				 MOV Z,	AX
+     66	0054  89 16 0033r			 MOV Z_SUB, DX
+     67	0058  EB 4A 90				 JMP FINISH
+     68
+     69	005B				     FUNC2:		 ;35X^2	+ 8X
+     70	005B  A1 002Dr				 MOV AX, X
+     71	005E  F7 E8				 IMUL AX
+     72	0060  70 36				 JO OVERFLOW
+     73	0062  BB 0023				 MOV BX, 35
+     74	0065  F7 EB				 IMUL BX
+     75	0067  70 2F				 JO OVERFLOW
+     76	0069  A3 0031r				 MOV Z,	AX	 ;35X^2
+     77
+     78	006C  A1 002Dr				 MOV AX, X
+     79	006F  BB 0008				 MOV BX, 8
+     80	0072  F7 EB				 IMUL BX	 ;8X
+     81	0074  70 22				 JO OVERFLOW
+     82	0076  01 06 0031r			 ADD Z,	AX	 ;35X^2	+ 8X
+     83	007A  70 1C				 JO OVERFLOW
+     84	007C  EB 26 90				 JMP FINISH
+     85
+     86	007F				     FUNC3:		 ;(10-X)^2
+     87	007F  B8 000A				 MOV AX, 10
+     88	0082  2B 06 002Dr			 SUB AX, X
+     89	0086  70 10				 JO OVERFLOW
+     90	0088  F7 E8				 IMUL AX
+     91	008A  70 0C				 JO OVERFLOW
+     92	008C  A3 0031r				 MOV Z,	AX
+     93	008F  EB 13 90				 JMP FINISH
+     94
+     95	0092				     WRONG_DATA:
+     96	0092  BA 0014r				 LEA DX, MSG_WRONG_DATA
+     97	0095  E9 0082				 JMP ERROR
+     98	0098				     OVERFLOW:
+     99	0098  BA 000Ar				 LEA DX, MSG_OVERFLOW
+    100	009B  EB 7D 90				 JMP ERROR
+    101	009E				     DIV_ZERO:
+    102	009E  BA 0020r				 LEA DX, MSG_DIV_ZERO
+    103	00A1  EB 77 90				 JMP ERROR
+    104	00A4				     FINISH:
+    105	00A4  E8 00A9				 CALL OUTPUT
+    106	00A7  CB				 RET
+    107	00A8				 MAIN ENDP
+    108
+    109	00A8				 CHECKNUMS PROC	NEAR
+    110	00A8  33 C0			     XOR AX, AX
+    111	00AA  BE 0037r			     LEA SI, BUFFER_X+1
+    112	00AD  8A 0C			     MOV CL, [SI]
+    113	00AF  46			     INC SI
+    114	00B0  E8 002F			     CALL CHECK_SIGN
+Turbo Assembler	 Version 4.0	    19/12/21 19:48:33	    Page 3
+task.ASM
+
+
+
+    115	00B3  E8 003B			     CALL CHECK_SYMBOLS
+    116	00B6  80 3E 0035r 00		     CMP ISNEG,	0
+    117	00BB  74 02			     JE	END_CHECK_X
+    118	00BD  F7 D8			     NEG AX
+    119	00BF				     END_CHECK_X:
+    120	00BF  A3 002Dr				 MOV X,	AX
+    121	00C2  C6 06 0035r 00			 MOV ISNEG, 0
+    122
+    123	00C7  33 C0			     XOR AX, AX
+    124	00C9  BE 0040r			     LEA SI, BUFFER_Y+1
+    125	00CC  8A 0C			     MOV CL, [SI]
+    126	00CE  46			     INC SI
+    127	00CF  E8 0010			     CALL CHECK_SIGN
+    128	00D2  E8 001C			     CALL CHECK_SYMBOLS
+    129	00D5  80 3E 0035r 00		     CMP ISNEG,	0
+    130	00DA  74 02			     JE	END_CHECK_Y
+    131	00DC  F7 D8			     NEG AX
+    132	00DE				     END_CHECK_Y:
+    133	00DE  A3 002Fr				 MOV Y,	AX
+    134	00E1  C3			     RET
+    135
+    136	00E2				     CHECK_SIGN:
+    137	00E2  8A 1C			     MOV BL, [SI]
+    138	00E4  80 FB 2D			     CMP BL, '-'
+    139	00E7  75 07			     JNE FINAL
+    140	00E9  46			     INC SI
+    141	00EA  C6 06 0035r 01		     MOV ISNEG,	1
+    142	00EF  49			     DEC CX
+    143	00F0				     FINAL:
+    144	00F0  C3			     RET
+    145
+    146	00F1				     CHECK_SYMBOLS:
+    147	00F1  F7 2E 0048r		     IMUL TEN
+    148	00F5  70 A1			     JO	OVERFLOW
+    149	00F7  8A 1C			     MOV BL, [SI]
+    150	00F9  80 FB 30			     CMP BL, '0'
+    151	00FC  72 94			     JB	WRONG_DATA
+    152	00FE  80 FB 39			     CMP BL, '9'
+    153	0101  77 8F			     JA	WRONG_DATA
+    154	0103  80 EB 30			     SUB BL, '0'
+    155	0106  03 C3			     ADD AX, BX
+    156	0108  71 0C			     JNO INC_FOR_NEXT
+    157	010A  80 3E 0035r 00		     CMP ISNEG,	0
+    158	010F  74 87			     JE	OVERFLOW
+    159	0111  3D 8000			     CMP AX, 32768
+    160	0114  74 82			     JE	OVERFLOW
+    161	0116				     INC_FOR_NEXT:
+    162	0116  46				 INC SI
+    163	0117  E2 D8				 LOOP CHECK_SYMBOLS
+    164	0119  C3			     RET
+    165	011A				 CHECKNUMS ENDP
+    166
+    167	011A				 ERROR PROC NEAR
+    168	011A  B4 09			     MOV AH, 9
+    169	011C  CD 21			     INT 21H
+    170	011E  B8 4C00			     MOV AX, 4C00H
+    171	0121  CD 21			     INT 21H
+Turbo Assembler	 Version 4.0	    19/12/21 19:48:33	    Page 4
+task.ASM
+
+
+
+    172	0123  E8 0023			     CALL NEXTLINE
+    173	0126				 ERROR ENDP
+    174
+    175	0126				 INPUT PROC NEAR
+    176	0126  B4 09			     MOV AH, 9
+    177	0128  BA 0000r			     LEA DX, MSG_GET_X
+    178	012B  CD 21			     INT 21H
+    179	012D  B4 0A			     MOV AH, 10
+    180	012F  BA 0036r			     LEA DX, BUFFER_X
+    181	0132  CD 21			     INT 21H
+    182	0134  E8 0012			     CALL NEXTLINE
+    183
+    184	0137  B4 09			     MOV AH, 9
+    185	0139  BA 0005r			     LEA DX, MSG_GET_Y
+    186	013C  CD 21			     INT 21h
+    187	013E  B4 0A			     MOV AH, 10
+    188	0140  BA 003Fr			     LEA DX, BUFFER_Y
+    189	0143  CD 21			     INT 21H
+    190	0145  E8 0001			     CALL NEXTLINE
+    191	0148  C3			     RET
+    192
+    193	0149				     NEXTLINE:
+    194	0149  B4 02			     MOV AH, 2
+    195	014B  B2 0A			     MOV DL, 10		 ; ASCII [10]/[AH] - NEW LINE
+    196	014D  CD 21			     INT 21H
+    197	014F  C3			     RET
+    198	0150				 INPUT ENDP
+    199
+    200	0150				 OUTPUT	PROC NEAR
+    201	0150  A1 0031r			     MOV AX, Z
+    202	0153  85 C0			     TEST AX, AX
+    203	0155  79 0B			     JNS SET_BASIC
+    204	0157  B0 2D			     MOV AL, '-'
+    205	0159  CD 29			     INT 29H
+    206	015B  F7 1E 0031r		     NEG Z
+    207	015F  A1 0031r			     MOV AX, Z
+    208
+    209	0162				     SET_BASIC:
+    210	0162  33 C9				 XOR CX, CX
+    211	0164				     STACKING:
+    212	0164  33 D2				 XOR DX, DX
+    213	0166  F7 36 0048r			 DIV TEN
+    214	016A  80 C2 30				 ADD DL, '0'	 ;'8' -> SCII CODE
+    215	016D  52				 PUSH DX
+    216	016E  41				 INC CX
+    217	016F  85 C0				 TEST AX, AX
+    218	0171  75 F1				 JNZ STACKING
+    219	0173				     UNSTACKING:
+    220	0173  58				 POP AX
+    221	0174  CD 29				 INT 29H
+    222	0176  E2 FB				 LOOP UNSTACKING
+    223
+    224	0178  A1 0033r			     MOV AX, Z_SUB
+    225	017B  85 C0			     TEST AX, AX
+    226	017D  74 1C			     JZ	ISZERO
+    227	017F				     STACKING_SUB:
+    228	017F  33 D2				 XOR DX, DX
+Turbo Assembler	 Version 4.0	    19/12/21 19:48:33	    Page 5
+task.ASM
+
+
+
+    229	0181  F7 36 0048r			 DIV TEN
+    230	0185  80 C2 30				 ADD DL, '0'
+    231	0188  52				 PUSH DX
+    232	0189  41				 INC CX
+    233	018A  85 C0				 TEST AX, AX
+    234	018C  75 F1				 JNZ STACKING_SUB
+    235	018E  B0 28			     MOV AL, '('
+    236	0190  CD 29			     INT 29H
+    237	0192				     UNSTACKING_SUB:
+    238	0192  58				 POP AX
+    239	0193  CD 29				 INT 29H
+    240	0195  E2 FB				 LOOP UNSTACKING_SUB
+    241	0197  B0 29			     MOV AL, ')'
+    242	0199  CD 29			     INT 29H
+    243	019B				     ISZERO:
+    244	019B  E8 FFAB				 CALL NEXTLINE
+    245	019E  C3				 RET
+    246	019F				 OUTPUT	ENDP
+    247
+    248	019F			     CSG ENDS
+    249				     END MAIN
+Turbo Assembler	 Version 4.0	    19/12/21 19:48:33	    Page 6
 Symbol Table
 
 
@@ -49,21 +280,56 @@ Symbol Table
 
 Symbol Name			  Type	 Value
 
-??DATE				  Text	 "07/11/21"
+??DATE				  Text	 "19/12/21"
 ??FILENAME			  Text	 "task	  "
-??TIME				  Text	 "14:42:25"
+??TIME				  Text	 "19:48:33"
 ??VERSION			  Number 0400
 @CPU				  Text	 0101H
-@CURSEG				  Text	 CSEG
+@CURSEG				  Text	 CSG
 @FILENAME			  Text	 TASK
 @WORDSIZE			  Text	 2
-DEST				  Byte	 DSEG:0004
-MAIN				  Far	 CSEG:0000
-SOURCE				  Byte	 DSEG:0000
+BUFFER_X			  Byte	 DSG:0036
+BUFFER_Y			  Byte	 DSG:003F
+CHECKNUMS			  Near	 CSG:00A8
+CHECK_SIGN			  Near	 CSG:00E2
+CHECK_SYMBOLS			  Near	 CSG:00F1
+DIV_ZERO			  Near	 CSG:009E
+END_CHECK_X			  Near	 CSG:00BF
+END_CHECK_Y			  Near	 CSG:00DE
+ERROR				  Near	 CSG:011A
+FINAL				  Near	 CSG:00F0
+FINISH				  Near	 CSG:00A4
+FUNC1				  Near	 CSG:0029
+FUNC2				  Near	 CSG:005B
+FUNC3				  Near	 CSG:007F
+INC_FOR_NEXT			  Near	 CSG:0116
+INPUT				  Near	 CSG:0126
+ISNEG				  Byte	 DSG:0035
+ISZERO				  Near	 CSG:019B
+MAIN				  Far	 CSG:0000
+MSG_DIV_ZERO			  Byte	 DSG:0020
+MSG_GET_X			  Byte	 DSG:0000
+MSG_GET_Y			  Byte	 DSG:0005
+MSG_OVERFLOW			  Byte	 DSG:000A
+MSG_WRONG_DATA			  Byte	 DSG:0014
+NEXTLINE			  Near	 CSG:0149
+OUTPUT				  Near	 CSG:0150
+OVERFLOW			  Near	 CSG:0098
+SET_BASIC			  Near	 CSG:0162
+STACKING			  Near	 CSG:0164
+STACKING_SUB			  Near	 CSG:017F
+TEN				  Word	 DSG:0048
+UNSTACKING			  Near	 CSG:0173
+UNSTACKING_SUB			  Near	 CSG:0192
+WRONG_DATA			  Near	 CSG:0092
+X				  Word	 DSG:002D
+Y				  Word	 DSG:002F
+Z				  Word	 DSG:0031
+Z_SUB				  Word	 DSG:0033
 
 Groups & Segments		  Bit Size Align  Combine Class
 
-CSEG				  16  0037 Para	  Public  CODE
-DSEG				  16  0008 Para	  Public  DATA
-STSEG				  16  0140 Para	  Stack	  STACK
+CSG				  16  019F Para	  Public  CODE
+DSG				  16  004A Para	  Public  DATA
+SSG				  16  0040 Para	  Stack	  STACK
 
